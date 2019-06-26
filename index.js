@@ -1,7 +1,7 @@
 const mdls = require('mdls');
 const { getFilePaths, moveFile, ensureExistingFolder } = require('./utils');
 
-const [inputFolder, outputFolder] = process.argv.slice(2);
+const [inputFolder, outputFolder, uniqueName] = process.argv.slice(2);
 console.log(`target folder: "${inputFolder}"`);
 console.log(`output folder: "${outputFolder}"`);
 
@@ -25,6 +25,12 @@ if (files.length <= 0) { // exit no files to process
 }
 
 async function processFiles(files) {
+    const addIndexPrefix = uniqueName && (
+        // is number and equals 1
+        (!isNaN(uniqueName) && uniqueName === '1') ||
+        // is non-number and 'true'
+        uniqueName.toLowerCase() === 'true'
+    );
     const batchSize = 10;
     const N = Math.ceil(files.length / batchSize);
 
@@ -33,7 +39,7 @@ async function processFiles(files) {
         const end = start + batchSize;
         const batch = files.slice(start, end);
 
-        const batchTasks = batch.map(async (file) => {
+        const batchTasks = batch.map(async (file, idx) => {
             try {
                 const metadata = await mdls(file);
                 const isAppleFile = (
@@ -45,7 +51,7 @@ async function processFiles(files) {
                 );
 
                 if (isAppleFile) {
-                    return moveFile(file, outputFolder);
+                    return moveFile(file, outputFolder, addIndexPrefix ? `${start}_${idx}_` : null);
                 }
             } catch (err) {
                 console.error(`mdls error for file: "${file}", err=${err}`);

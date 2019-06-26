@@ -18,9 +18,9 @@ const getFilePaths = (folderPath) => {
  * Moves given file to target-folder
  * @return {Promise<VoidFunction>}
  */
-const moveFile = (file, targetFolder) => {
+const moveFile = (file, targetFolder, prefix) => {
     const [fileName] = file.split('/').splice(-1);
-    const newPath = `${targetFolder}/${fileName}`;
+    const newPath = `${targetFolder}/${prefix ? prefix : ''}${fileName}`;
     return new Promise(((resolve, reject) => fs.rename(file, newPath, (err) => err ? reject(err) : resolve())));
 };
 
